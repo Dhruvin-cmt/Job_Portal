@@ -1,5 +1,5 @@
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
-import ErrorHandler from "../models/error.js";
+import ErrorHandler from "../middlewares/error.js";
 import { User } from "../models/userSchema.js";
 import express from "express";
 import { generateToken } from "../utils/jwtToken.js";
