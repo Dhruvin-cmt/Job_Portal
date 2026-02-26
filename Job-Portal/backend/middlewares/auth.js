@@ -33,6 +33,10 @@ export const isEmpAuthenticated = catchAsyncErrors(async (req, res, next) => {
   const decode = jwt.verify(token, process.env.JWT_SECRET_KEY);
   req.user = await User.findById(decode.id);
 
+  if(!req.user) {
+    return next(new ErrorHandler("User not found!", 400))
+  }
+
   if (req.user.role !== "Employee") {
     return next(
       new ErrorHandler("User do not permission to access this service!", 400)

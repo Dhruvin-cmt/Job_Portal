@@ -1,4 +1,3 @@
-import express from "express";
 import ErrorHandler from "../middlewares/error.js";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import { Job } from "../models/jobSchema.js";
@@ -78,7 +77,7 @@ export const updateJob = catchAsyncErrors(async (req, res, next) => {
     }
   );
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     getJobApplication,
     message: "Job Updated Succesfully!",

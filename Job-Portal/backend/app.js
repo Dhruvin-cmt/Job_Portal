@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { dbConnection } from "./database/dbConnection.js";
 import empRouter from "./router/empRouter.js";
 import employerRouter from "./router/employerRouter.js";
+import { errorMiddleware } from "./middlewares/error.js";
 
 config({ path: "./config/.env" });
 
@@ -27,5 +28,7 @@ app.use("/api/user/emp", empRouter);
 app.use("/api/user/employer", employerRouter);
 
 dbConnection();
+
+app.use(errorMiddleware)
 
 export default app;

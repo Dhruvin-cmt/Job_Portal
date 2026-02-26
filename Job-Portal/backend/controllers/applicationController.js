@@ -1,4 +1,3 @@
-import express from "express";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { Application } from "../models/applicationSchema.js";
@@ -25,6 +24,14 @@ export const applyToJob = catchAsyncErrors(async (req, res, next) => {
     .replace(/[^a-zA-Z0-9_-]/g, "_"); // replace illegal chars
   const publicId = `${Date.now()}_${originalName}`;
 
+  const isAlreadyApplied = await Application.findOne({
+    email: req.body.email,
+    job_id: req.params.id,
+  });
+  if (isAlreadyApplied) {
+    return next(new ErrorHandler("You already applied for this Job!", 400));
+  }
+
   const result = await new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: "my_app_uploads", resource_type: "raw", public_id: publicId },
@@ -35,14 +42,6 @@ export const applyToJob = catchAsyncErrors(async (req, res, next) => {
     );
     stream.end(req.file.buffer);
   });
-
-  const isAlreadyApplied = await Application.findOne({
-    email: req.body.email,
-    job_id: req.params.id,
-  });
-  if (isAlreadyApplied) {
-    return next(new ErrorHandler("You already applied for this Job!", 400));
-  }
 
   const applicationOfEmp = await Application.create({
     email: req.body.email,

@@ -2,7 +2,6 @@ import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { User } from "../models/userSchema.js";
 import { v2 as cloudinary } from "cloudinary";
-import express from "express";
 import { generateToken } from "../utils/jwtToken.js";
 import { compare } from "bcrypt";
 import multer from "multer";

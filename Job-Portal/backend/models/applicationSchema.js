@@ -10,15 +10,15 @@ const applicationSchema = new mongoose.Schema({
     required: true,
   },
   resume: {
-    type : Object,
-    public_id: String,
-    url: String,
+    type: Object,
+    public_id: { type: String },
+    url: { type: String },
     required: true,
   },
   applicant_id: {
     type: mongoose.Schema.ObjectId,
     ref: User,
-    // required: true,
+    required: true,
   },
   job_id: {
     type: String,
