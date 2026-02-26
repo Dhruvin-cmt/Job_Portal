@@ -1,10 +1,11 @@
 import express from "express";
+// import multer from "multer";
 import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { dbConnection } from "./database/dbConnection.js";
-import empRouter from "./router/empRouter.js"
-import employerRouter from "./router/employerRouter.js"
+import empRouter from "./router/empRouter.js";
+import employerRouter from "./router/employerRouter.js";
 
 config({ path: "./config/.env" });
 

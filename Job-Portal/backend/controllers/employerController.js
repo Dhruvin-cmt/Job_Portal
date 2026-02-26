@@ -57,3 +57,5 @@ export const employerLogin = catchAsyncErrors(async (req, res, next) => {
 
   await generateToken(isExist, "User LoggedIn Succesfully", 200, res);
 });
+
+

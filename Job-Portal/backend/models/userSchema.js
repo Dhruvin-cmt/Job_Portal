@@ -21,22 +21,26 @@ const userSchema = new mongoose.Schema({
     minLength: [8, "Password must contains atleast 8 characters!"],
   },
   address: {
-    type : String,
+    type: String,
   },
-  experience : {
-    type: String
+  experience: {
+    type: String,
   },
   designation: {
-    type: String
+    type: String,
   },
   currentWorkSpace: {
-    type : String
+    type: String,
   },
-  role : {
-    type : String,
-    enum : ["Employee", "Employer"]
-  }
- });
+  role: {
+    type: String,
+    enum: ["Employee", "Employer"],
+  },
+  resume: {
+    public: String,
+    url: String,
+  },
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
