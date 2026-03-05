@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { dbConnection } from "./database/dbConnection.js";
 import empRouter from "./router/empRouter.js";
 import employerRouter from "./router/employerRouter.js";
+import { getPublicJobs } from "./controllers/jobController.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
 config({ path: "./config/.env" });
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/user/emp", empRouter);
 app.use("/api/user/employer", employerRouter);
+app.get("/api/jobs", getPublicJobs);
 
 dbConnection();
 

@@ -60,6 +60,16 @@ export const getJobs = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// Public: get all open jobs for browse page (no auth required)
+export const getPublicJobs = catchAsyncErrors(async (req, res, next) => {
+  const jobs = await Job.find({ status: "Open" }).sort({ _id: -1 });
+
+  res.status(200).json({
+    success: true,
+    jobs,
+  });
+});
+
 export const updateJob = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
 
