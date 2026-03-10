@@ -3,7 +3,6 @@ import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { dbConnection } from "./database/dbConnection.js";
 import empRouter from "./router/empRouter.js";
 import employerRouter from "./router/employerRouter.js";
 import { getPublicJobs } from "./controllers/jobController.js";
@@ -29,8 +28,6 @@ app.use("/api/user/emp", empRouter);
 app.use("/api/user/employer", employerRouter);
 app.get("/api/jobs", getPublicJobs);
 
-dbConnection();
-
-app.use(errorMiddleware)
+app.use(errorMiddleware);
 
 export default app;

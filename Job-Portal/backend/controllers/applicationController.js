@@ -10,11 +10,20 @@ export const applyToJob = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Provide email for application", 400));
   }
 
+  const name = req.body?.name;
+  if (!name) {
+    return next(new ErrorHandler("Provide your name", 400));
+  }
+
   if (!req.file) {
     return next(new ErrorHandler("Provide Your Resume!", 400));
   }
   const resume = req.file;
-  const allowedFormats = ["application/pdf", "application/msword"];
+  const allowedFormats = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
   if (!allowedFormats.includes(resume.mimetype)) {
     return next(new ErrorHandler("File Type is not supported!", 400));
   }
@@ -44,6 +53,7 @@ export const applyToJob = catchAsyncErrors(async (req, res, next) => {
   });
 
   const applicationOfEmp = await Application.create({
+    name,
     email: req.body.email,
     resume: {
       url: result.secure_url,

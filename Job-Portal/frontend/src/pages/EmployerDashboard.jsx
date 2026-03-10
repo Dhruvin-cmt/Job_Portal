@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getEmployerJobs, updateJob, deleteJob } from '../api/jobs';
+import { getEmployerJobs, updateJob, deleteJob, getJobApplications, updateApplicationStatus } from '../api/jobs';
 import JobCard from '../components/JobCard';
 
 export default function EmployerDashboard() {
@@ -10,6 +10,9 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
+  const [appsByJob, setAppsByJob] = useState({});
+  const [appsLoading, setAppsLoading] = useState(null);
+  const [openApps, setOpenApps] = useState(null);
 
   const fetchJobs = async () => {
     try {
@@ -48,6 +51,40 @@ export default function EmployerDashboard() {
       setJobs((prev) => prev.filter((j) => j._id !== id));
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Delete failed.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const toggleApplications = async (jobId) => {
+    if (openApps === jobId) {
+      setOpenApps(null);
+      return;
+    }
+    setOpenApps(jobId);
+    if (appsByJob[jobId]) return;
+    setAppsLoading(jobId);
+    try {
+      const { data } = await getJobApplications(jobId);
+      setAppsByJob((prev) => ({ ...prev, [jobId]: data.jobApplicants || [] }));
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to load applicants.');
+    } finally {
+      setAppsLoading(null);
+    }
+  };
+
+  const handleApplicationStatus = async (applicationId, jobId, status) => {
+    setActionLoading(applicationId);
+    try {
+      await updateApplicationStatus(applicationId, status);
+      setAppsByJob((prev) => ({
+        ...prev,
+        [jobId]: (prev[jobId] || []).map((a) => (a._id === applicationId ? { ...a, status } : a)),
+      }));
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to update application.');
     } finally {
       setActionLoading(null);
     }
@@ -107,6 +144,14 @@ export default function EmployerDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleApplications(job.jobId)}
+                      disabled={appsLoading === job.jobId}
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      {appsLoading === job.jobId ? '...' : openApps === job.jobId ? 'Hide applicants' : 'View applicants'}
+                    </button>
                     {job.status === 'Open' ? (
                       <button
                         type="button"
@@ -138,6 +183,62 @@ export default function EmployerDashboard() {
                     )}
                   </div>
                 </div>
+
+                {openApps === job.jobId && (
+                  <div className="mt-4 border-t border-slate-200 pt-4">
+                    <h4 className="text-sm font-semibold text-slate-800">Applicants</h4>
+                    {(appsByJob[job.jobId] || []).length === 0 ? (
+                      <p className="text-sm text-slate-500 mt-2">No applications yet.</p>
+                    ) : (
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-slate-500">
+                              <th className="py-2 pr-4 font-medium">Name</th>
+                              <th className="py-2 pr-4 font-medium">Email</th>
+                              <th className="py-2 pr-4 font-medium">Status</th>
+                              <th className="py-2 pr-4 font-medium">Resume</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {(appsByJob[job.jobId] || []).map((a) => (
+                              <tr key={a._id}>
+                                <td className="py-2 pr-4 text-slate-800">{a.name || '-'}</td>
+                                <td className="py-2 pr-4 text-slate-700">{a.email}</td>
+                                <td className="py-2 pr-4">
+                                  <select
+                                    value={a.status || 'Pending'}
+                                    disabled={actionLoading === a._id}
+                                    onChange={(e) => handleApplicationStatus(a._id, job.jobId, e.target.value)}
+                                    className="px-2 py-1 rounded-md border border-slate-300 bg-white text-slate-700 text-sm disabled:opacity-50"
+                                  >
+                                    <option value="Pending">Pending</option>
+                                    <option value="Short-listed">Short-listed</option>
+                                    <option value="Rejected">Rejected</option>
+                                  </select>
+                                </td>
+                                <td className="py-2 pr-4">
+                                  {a.resume?.url ? (
+                                    <a
+                                      href={a.resume.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-primary-600 font-medium hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  ) : (
+                                    <span className="text-slate-400">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

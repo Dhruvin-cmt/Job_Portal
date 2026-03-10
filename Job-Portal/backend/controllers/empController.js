@@ -6,6 +6,7 @@ import { generateToken } from "../utils/jwtToken.js";
 import { compare } from "bcrypt";
 import multer from "multer";
 import { Job } from "../models/jobSchema.js";
+import { Application } from "../models/applicationSchema.js";
 
 export const empRegister = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -109,4 +110,36 @@ export const uploadResume = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+export const myApplications = catchAsyncErrors(async (req, res, next) => {
+  const id = await req.user._id;
+  const myJobs = await Application.find({ applicant_id: id });
+  // console.log(myJobs);
 
+  res.status(200).json({
+    message: "Your Appliactions was Here!!",
+    success: true,
+    myJobs,
+  });
+});
+
+export const empMe = catchAsyncErrors(async (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
+});
+
+export const empLogout = catchAsyncErrors(async (req, res, next) => {
+  const isProd = process.env.NODE_ENV === "production";
+  res
+    .status(200)
+    .clearCookie("employeetoken", {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+    })
+    .json({
+      success: true,
+      message: "Logged out successfully",
+    });
+});

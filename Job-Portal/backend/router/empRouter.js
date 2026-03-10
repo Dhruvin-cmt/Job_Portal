@@ -3,6 +3,9 @@ import multer from "multer";
 import {
   empLogin,
   empRegister,
+  empLogout,
+  empMe,
+  myApplications,
   uploadResume,
 } from "../controllers/empController.js";
 import { applyToJob } from "../controllers/applicationController.js"
@@ -16,6 +19,8 @@ const router = express.Router();
 
 router.post("/register", empRegister);
 router.post("/login", empLogin);
+router.get("/me", isEmpAuthenticated, empMe);
+router.post("/logout", isEmpAuthenticated, empLogout);
 router.post(
   "/upload",
   isEmpAuthenticated,
@@ -28,5 +33,6 @@ router.post(
   upload.single("resume"),
   applyToJob
 );
+router.get("/jobs/myapplications", isEmpAuthenticated, myApplications)
 
 export default router;

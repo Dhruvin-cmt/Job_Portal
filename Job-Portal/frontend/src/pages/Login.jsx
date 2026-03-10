@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { empLogin, employerLogin } from '../api/auth';
@@ -10,8 +10,14 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { setUser } = useAuth();
+  const { setUser, isAuthenticated, role: currentRole } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(currentRole === 'Employer' ? '/employer/dashboard' : '/employee/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, currentRole, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

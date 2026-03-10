@@ -5,10 +5,12 @@ import { generateToken } from "../utils/jwtToken.js";
 
 export const employerRegister = catchAsyncErrors(async (req, res, next) => {
   const { userName, email, password, currentWorkSpace } = req.body;
+  console.log(req.body)
   if (!userName || !email || !password) {
     return next(new ErrorHandler("Fill the required details", 400));
   }
 
+  console.log(email)
   const isExist = await User.findOne({ email });
   if (isExist?.role === "Employer") {
     return next(
@@ -55,6 +57,28 @@ export const employerLogin = catchAsyncErrors(async (req, res, next) => {
   }
 
   await generateToken(isExist, "User LoggedIn Succesfully", 200, res);
+});
+
+export const employerMe = catchAsyncErrors(async (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
+});
+
+export const employerLogout = catchAsyncErrors(async (req, res, next) => {
+  const isProd = process.env.NODE_ENV === "production";
+  res
+    .status(200)
+    .clearCookie("employertoken", {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+    })
+    .json({
+      success: true,
+      message: "Logged out successfully",
+    });
 });
 
 

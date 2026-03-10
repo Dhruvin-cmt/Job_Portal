@@ -1,6 +1,7 @@
 import ErrorHandler from "../middlewares/error.js";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import { Job } from "../models/jobSchema.js";
+import { Application } from "../models/applicationSchema.js";
 
 export const publishJob = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -60,9 +61,27 @@ export const getJobs = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// Public: get all open jobs for browse page (no auth required)
+// Public: get all open jobs for browse page (no auth required) with basic search
 export const getPublicJobs = catchAsyncErrors(async (req, res, next) => {
-  const jobs = await Job.find({ status: "Open" }).sort({ _id: -1 });
+  const { q, location } = req.query;
+
+  const query = { status: "Open" };
+
+  if (q && q.trim()) {
+    const regex = new RegExp(q.trim(), "i");
+    query.$or = [
+      { title: regex },
+      { company: regex },
+      { description: regex },
+      { jobId: regex },
+    ];
+  }
+
+  if (location && location.trim()) {
+    query.location = new RegExp(location.trim(), "i");
+  }
+
+  const jobs = await Job.find(query).sort({ _id: -1 });
 
   res.status(200).json({
     success: true,
@@ -113,5 +132,62 @@ export const deleteJob = catchAsyncErrors(async (req, res, next) => {
     success: true,
     getJobApplication,
     message: "Job Deleted Succesfully!",
+  });
+});
+
+export const trackApplicants = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const job = await Job.findOne({ jobId: id });
+  if (!job) {
+    return next(new ErrorHandler("Job not found!", 404));
+  }
+
+  if (String(job.applicant_id) !== String(req.user?._id)) {
+    return next(new ErrorHandler("You do not have access to these applications!", 403));
+  }
+
+  const jobApplicants = await Application.find({ job_id: id }).sort({ _id: -1 });
+
+  res.status(200).json({
+    success: true,
+    jobApplicants,
+    message: "Applicants fetch succesfully!",
+  });
+});
+
+export const updateApplication = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params; // application _id
+  const { status } = req.body;
+
+  if (!status) {
+    return next(new ErrorHandler("Provide status to update application!", 400));
+  }
+
+  const allowed = ["Pending", "Rejected", "Short-listed"];
+  if (!allowed.includes(status)) {
+    return next(new ErrorHandler("Invalid application status!", 400));
+  }
+
+  const application = await Application.findById(id);
+  if (!application) {
+    return next(new ErrorHandler("Application not found!", 404));
+  }
+
+  const job = await Job.findOne({ jobId: application.job_id });
+  if (!job) {
+    return next(new ErrorHandler("Job not found for this application!", 404));
+  }
+
+  if (String(job.applicant_id) !== String(req.user?._id)) {
+    return next(new ErrorHandler("You do not have permission to update this application!", 403));
+  }
+
+  application.status = status;
+  await application.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Application status updated successfully!",
+    application,
   });
 });

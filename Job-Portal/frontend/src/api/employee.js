@@ -5,3 +5,6 @@ export const uploadResume = (formData) =>
 
 export const applyToJob = (jobId, formData) =>
   api.post(`/api/user/emp/jobs/apply/${jobId}`, formData);
+
+export const getMyApplications = () =>
+  api.get('/api/user/emp/jobs/myapplications');
