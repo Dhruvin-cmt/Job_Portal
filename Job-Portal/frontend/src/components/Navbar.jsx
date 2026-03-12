@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -7,6 +7,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, role, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
@@ -62,6 +63,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/login"
+                  state={{ from: location.pathname }}
                   className="text-slate-600 hover:text-primary-600 px-4 py-2 text-sm font-medium rounded-md transition"
                 >
                   Log in

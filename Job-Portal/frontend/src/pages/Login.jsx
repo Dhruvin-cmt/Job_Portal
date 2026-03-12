@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { empLogin, employerLogin } from '../api/auth';
 
@@ -12,10 +12,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { setUser, isAuthenticated, role: currentRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || null;
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(currentRole === 'Employer' ? '/employer/dashboard' : '/employee/dashboard', { replace: true });
+      navigate(from || (currentRole === 'Employer' ? '/employer/dashboard' : '/employee/dashboard'), { replace: true });
     }
   }, [isAuthenticated, currentRole, navigate]);
 
@@ -31,7 +33,7 @@ export default function Login() {
       const api = role === 'employer' ? employerLogin : empLogin;
       const { data } = await api(form);
       setUser(data.user);
-      navigate(role === 'employer' ? '/employer/dashboard' : '/employee/dashboard', { replace: true });
+      navigate(from || (role === 'employer' ? '/employer/dashboard' : '/employee/dashboard'), { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Login failed.');
     } finally {
