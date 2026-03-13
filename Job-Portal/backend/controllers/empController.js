@@ -45,17 +45,12 @@ export const empRegister = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const empLogin = catchAsyncErrors(async (req, res, next) => {
-  const { email, password, confirmPassword } = req.body;
+  const { email, password } = req.body;
 
-  if (!email || !password || !confirmPassword) {
+  if (!email || !password) {
     return next(new ErrorHandler("Fill the required details", 400));
   }
 
-  if (password !== confirmPassword) {
-    return next(
-      new ErrorHandler("Password and Confirm-Password Do not Match!", 400)
-    );
-  }
 
   const isExist = await User.findOne({ email }).select("+password");
   if (!isExist) {
